@@ -3,6 +3,9 @@ package com.ruthwikkk.compose.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -10,11 +13,18 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ruthwikkk.compose.myapplication.ui.theme.ClickBallTheme
 import kotlinx.coroutines.delay
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +75,10 @@ fun MainScreen() {
                 isTimerRunning = false
             }
         }
+        
+        ClickBall(enabled = isTimerRunning) {
+            points++
+        }
     }
 }
 
@@ -95,5 +109,49 @@ fun CountDownTimer(
         text = (currentTime/1000).toString(),
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold
+    )
+}
+
+@Composable
+fun ClickBall(
+    radius: Float = 100f,
+    enabled: Boolean = false,
+    ballColor: Color = Color.Red,
+    onClick: () -> Unit
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        var position by remember {
+            mutableStateOf(
+                randomOffset(
+                    radius = radius,
+                    width = constraints.maxWidth,
+                    height = constraints.maxHeight
+                )
+            )
+        }
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(enabled) {
+                if(!enabled)
+                    return@pointerInput
+
+                detectTapGestures {
+                    val distance = sqrt((it.x - position.x).pow(2) +
+                            (it.y - position.y).pow(2))
+                    if(distance <= radius){
+                        position = randomOffset(radius, constraints.maxWidth, constraints.maxHeight)
+                        onClick()
+                    }
+                }
+            }) {
+            drawCircle(ballColor, radius, position)
+        }
+    }
+}
+
+private fun randomOffset(radius: Float, width: Int, height: Int): Offset {
+    return Offset(
+        x = Random.nextInt(radius.roundToInt(), (width - radius).roundToInt()).toFloat(),
+        y = Random.nextInt(radius.roundToInt(), (height - radius).roundToInt()).toFloat()
     )
 }
