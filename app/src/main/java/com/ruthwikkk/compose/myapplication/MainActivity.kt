@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -67,6 +66,9 @@ fun MainScreen() {
         if(state == GameState.LOADING){
             delay(1500)
             state = GameState.PLAY
+
+            points = 0
+            isTimerRunning = !isTimerRunning
         }
     }
 
@@ -96,12 +98,6 @@ fun MainScreen() {
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Button(onClick = {
-                        points = 0
-                        isTimerRunning = !isTimerRunning
-                    }) {
-                        Text(text = if(isTimerRunning) "Reset" else "Start")
-                    }
                     CountDownTimer(
                         isTimerRunning = isTimerRunning
                     ){
